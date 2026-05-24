@@ -1,0 +1,75 @@
+# DeepSeek 7B + QLoRA (24G 显存起步配置)
+# 用途：甄嬛传风格 SFT 微调
+
+model:
+  # 按你本地实际模型路径或HF模型名修改
+  name_or_path: "deepseek-ai/deepseek-llm-7b-chat"
+  trust_remote_code: true
+  use_flash_attn: auto
+
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_compute_dtype: "bfloat16"   # 不支持 bf16 时改为 float16
+  bnb_4bit_use_double_quant: true
+
+lora:
+  r: 64
+  alpha: 128
+  dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "up_proj"
+    - "down_proj"
+    - "gate_proj"
+
+data:
+  train_file: "data/train.jsonl"
+  val_file: "data/val.jsonl"
+  prompt_template: "chatml"
+  max_length: 1536
+  packing: false
+
+training:
+  output_dir: "outputs/deepseek7b-zhenhuan-sft"
+  num_train_epochs: 3
+  learning_rate: 1.0e-4
+  lr_scheduler_type: "cosine"
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+
+  # 24G 推荐
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 16
+
+  max_grad_norm: 1.0
+  gradient_checkpointing: true
+  logging_steps: 10
+  save_steps: 200
+  eval_steps: 200
+  save_total_limit: 3
+  evaluation_strategy: "steps"
+  save_strategy: "steps"
+  report_to:
+    - "tensorboard"
+  seed: 42
+
+precision:
+  bf16: true
+  fp16: false
+  tf32: true
+
+inference_check:
+  enabled: true
+  test_prompts:
+    - "今天工作压力很大，你用甄嬛传风格安慰我。"
+    - "请用简洁现代中文解释什么是梯度下降。"
+    - "帮我写一条礼貌拒绝不合理请求的话。"
+
+notes:
+  - "若OOM，先将 max_length 调到 1024，再考虑把 lora.r 改为 32。"
+  - "若风格不明显，优先增加风格数据占比，而非盲目提高学习率。"

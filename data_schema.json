@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Zhenhuan Style SFT Sample Schema",
+  "description": "甄嬛传风格微调单条样本格式。推荐保存为 JSONL，每行一个对象。",
+  "type": "object",
+  "required": [
+    "id",
+    "style",
+    "style_intensity",
+    "messages"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "样本唯一ID，如 zhenhuan_000001"
+    },
+    "style": {
+      "type": "string",
+      "enum": [
+        "zhenhuan"
+      ],
+      "description": "风格类型，当前固定为 zhenhuan"
+    },
+    "style_intensity": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "风格强度，建议训练时覆盖 1~5"
+    },
+    "scene": {
+      "type": "string",
+      "enum": [
+        "闲聊",
+        "安慰",
+        "劝诫",
+        "角色扮演",
+        "知识问答",
+        "安全拒答"
+      ],
+      "description": "场景标签，便于分桶评估"
+    },
+    "tone": {
+      "type": "string",
+      "enum": [
+        "温婉",
+        "克制",
+        "凛冽"
+      ],
+      "description": "语气标签"
+    },
+    "messages": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "system",
+              "user",
+              "assistant"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "多轮对话数组，最后一条建议为 assistant 目标输出"
+    },
+    "safety": {
+      "type": "object",
+      "properties": {
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "should_refuse": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
